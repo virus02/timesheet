@@ -1,12 +1,12 @@
-.create-user-container {
+.edit-user-container {
   display: flex; 
   justify-content: center;
   align-items: center;
-  margin-top: 100px;
+  margin-top: 120px;
   margin-right: 100px;
 }
 
-.create-user-form-container {
+.edit-user-form-container {
   text-align: center;
   height: 60vh;
   width: 35%;

@@ -12,7 +12,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 
-const settings = ['Profile', 'Account', 'Logout'];
+const settings = ['Logout'];
 
 function Header() {
   const [anchorElUser, setAnchorElUser] = useState(null);

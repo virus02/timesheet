@@ -4,6 +4,10 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var cors = require('cors');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+import { run } from './services/mongodb/index';
+import { verifyToken } from './middleware/verifyToken';
 
 var apiRouter = require("./routes");
 
@@ -18,7 +22,29 @@ app.use(cors());
 app.use("/api", apiRouter);
 
 app.post("/login", async function (req, res, next) {
+  const { email, password } = req.body;
 
+  try {
+    const user = await run('timesheet', 'user_auth', 'find', {email: email});
+    if(user) {
+      const passwordMatch = await bcrypt.compare(password, user.password);
+
+      if (passwordMatch) {
+        let userDetails = await run('timesheet', 'users', 'find', {email: user.email});
+        delete userDetails['_id'];
+        const token = jwt.sign({ userId: user.email }, 'timesheet123', { expiresIn: '1h' });
+        userDetails['token'] = token;
+        userDetails = JSON.stringify(userDetails);
+        res.status(200).send({ message: 'Login successful', details: userDetails });
+      } else {
+        res.status(401).send({ message: 'Invalid password' });
+      }
+    } else {
+      res.status(404).send({ message: 'User not found' });
+    }
+  } catch(error) {
+    console.log(error);
+  }
 });
 
 module.exports = app;
