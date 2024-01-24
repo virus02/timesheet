@@ -82,21 +82,6 @@ function Login() {
     }
   }
 
-  // const login = async () => {
-    
-    // const response = await fetch('http://localhost:3000/login', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify({email, password})
-    // });
-    // const user = await response.json();
-    // sessionStorage.setItem('user', user.details);
-    // setSnackBarOpen(true);
-    // setSnackBarMsg("Login successfull !!!");
-  // }
-
   return(
     <div className="login-container">
       <div className="login-form-container">
