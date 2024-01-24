@@ -10,3 +10,16 @@
   height: 50vh;
   width: 35%;
 }
+
+.errmsg {
+  background: rgb(255 151 151);
+  color: #4f0202;
+  padding: 7px;
+  font-weight: 500;
+  border-radius: 3px;
+}
+
+.offscreen {
+  position: absolute;
+  left: -9999px;
+}

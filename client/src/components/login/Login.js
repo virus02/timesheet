@@ -1,19 +1,39 @@
 import "./Login.css";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import axios from "../../api/axios";
 import Card from '@mui/material/Card';
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import Snackbar from '@mui/material/Snackbar';
+import useAuth from "../../hooks/useAuth";
+const LOGIN_URL = 'login'
 
 function Login() {
+  const { setAuth } = useAuth();
+  const userRef = useRef();
+  const errRef = useRef();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [emailError, setEmailError] = useState(false);
-  const [passwordError, setPasswordError] = useState(false);
+  const [errMsg, setErrMsg] = useState('');
+
   const [snackBarOpen, setSnackBarOpen] = useState(false);
   const [snackBarMsg, setSnackBarMsg] = useState('');
+
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    userRef.current.focus();
+  }, []);
+
+  useEffect(() => {
+    setErrMsg('');
+  }, [email, password]);
 
   const snackBarAction = (
     <>
@@ -30,43 +50,60 @@ function Login() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-
-    setEmailError(false);
-    setPasswordError(false);
-
-    if(email === '') {
-      setEmailError(true);
-    }
-
-    if(password === '') {
-      setPasswordError(true);
-    }
-
-    if(email && password) {
-      await login();
+    try {
+      const response = await axios.post(LOGIN_URL, 
+        JSON.stringify({email: email, password: password}),
+        {
+          headers: {'Content-Type': 'application/json'}
+        }
+      );
+      console.log(response.data);
+      const accessToken = response.data.token;
+      const roles = response.data.role;
+      setAuth({ email, password, roles, accessToken });
+      setEmail('');
+      setPassword('');
+      setSnackBarOpen(true);
+      setSnackBarMsg("Login successfull !!!");
+      navigate(from, { replace: true });
+    } catch(err) {
+      if (!err.response) {
+        setErrMsg('No server response');
+      } else if (err.response.status === 400) {
+        setErrMsg('Missing email or password');
+      } else if (err.response.status === 401) {
+        setErrMsg('Unathorized');
+      } else {
+        setErrMsg('Login failed');
+        setSnackBarOpen(true);
+        setSnackBarMsg("Login failed !!!");
+      }
+      errRef.current.focus();
     }
   }
 
-  const login = async () => {
-    const response = await fetch('http://localhost:3000/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({email, password})
-    });
-    const user = await response.json();
-    sessionStorage.setItem('user', user.details);
-    setSnackBarOpen(true);
-    setSnackBarMsg("Login successfull !!!");
-  }
+  // const login = async () => {
+    
+    // const response = await fetch('http://localhost:3000/login', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   },
+    //   body: JSON.stringify({email, password})
+    // });
+    // const user = await response.json();
+    // sessionStorage.setItem('user', user.details);
+    // setSnackBarOpen(true);
+    // setSnackBarMsg("Login successfull !!!");
+  // }
 
   return(
     <div className="login-container">
       <div className="login-form-container">
         <Card sx={{ padding: "10px", height: "35vh", alignItems: "center" }} raised>
+          <h2 style={{ textAlign: "center" }}>Login Form</h2>
+          <p ref={errRef} className={errMsg ? 'errmsg' : 'offscreen'} aria-live="assertive">{errMsg}</p>
           <form onSubmit={handleSubmit}>
-            <h2 style={{ textAlign: "center" }}>Login Form</h2>
             <TextField
               label="Email"
               onChange={e => setEmail(e.target.value)}
@@ -77,21 +114,21 @@ function Login() {
               fullWidth
               sx={{ mb: 3 }}
               value={email}
-              error={emailError}
+              ref={userRef}
             />
             <TextField
               label="Password"
               onChange={e => setPassword(e.target.value)}
-              required
               variant="outlined"
               color="primary"
               type="password"
               fullWidth
               sx={{ mb: 3}}
               value={password}
-              error={passwordError}
             />
-            <Button variant="contained" color="primary" type="submit">Login</Button>
+            <div style={{ textAlign: 'center' }}>
+              <Button variant="contained" color="primary" type="submit">Login</Button>
+            </div>
           </form>
         </Card>
       </div>

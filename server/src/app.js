@@ -21,10 +21,13 @@ app.use(cors());
 
 app.use("/api", apiRouter);
 
-app.post("/login", async function (req, res, next) {
+app.post("/api/login", async function (req, res, next) {
   const { email, password } = req.body;
 
   try {
+    if(!email || !password) {
+      res.status(400).send({ message: 'Missing email or password' });
+    }
     const user = await run('timesheet', 'user_auth', 'find', {email: email});
     if(user) {
       const passwordMatch = await bcrypt.compare(password, user.password);
@@ -34,8 +37,7 @@ app.post("/login", async function (req, res, next) {
         delete userDetails['_id'];
         const token = jwt.sign({ userId: user.email }, 'timesheet123', { expiresIn: '1h' });
         userDetails['token'] = token;
-        userDetails = JSON.stringify(userDetails);
-        res.status(200).send({ message: 'Login successful', details: userDetails });
+        res.status(200).send(userDetails);
       } else {
         res.status(401).send({ message: 'Invalid password' });
       }
