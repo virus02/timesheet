@@ -1,6 +1,6 @@
 import "./Login.css";
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from "../../api/axios";
 import Card from '@mui/material/Card';
 import TextField from "@mui/material/TextField";
@@ -54,12 +54,13 @@ function Login() {
       const response = await axios.post(LOGIN_URL, 
         JSON.stringify({email: email, password: password}),
         {
-          headers: {'Content-Type': 'application/json'}
+          headers: {'Content-Type': 'application/json'},
+          withCredentials: true
         }
       );
-      console.log(response.data);
       const accessToken = response.data.token;
       const roles = response.data.role;
+      console.log(response.data);
       setAuth({ email, password, roles, accessToken });
       setEmail('');
       setPassword('');

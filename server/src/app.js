@@ -17,7 +17,10 @@ app.use(logger("dev"));
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(cors());
+app.use(cors({
+  credentials: true,
+  origin: 'http://localhost:3001',
+}));
 
 app.use("/api", apiRouter);
 
@@ -36,16 +39,45 @@ app.post("/api/login", async function (req, res, next) {
         let userDetails = await run('timesheet', 'users', 'find', {email: user.email});
         delete userDetails['_id'];
         const token = jwt.sign({ userId: user.email }, 'timesheet123', { expiresIn: '1h' });
+        const refresh = jwt.sign({ userId: user.email }, 'timesheet123', { expiresIn: '1d' });
+        res.cookie('jwt', refresh, {
+          httpOnly: true,
+          secure: true,
+          path: '/api/refresh',
+        });
         userDetails['token'] = token;
-        res.status(200).send(userDetails);
+        return res.status(200).send(userDetails);
       } else {
-        res.status(401).send({ message: 'Invalid password' });
+        return res.status(401).send({ message: 'Invalid password' });
       }
     } else {
-      res.status(404).send({ message: 'User not found' });
+      return res.status(404).send({ message: 'User not found' });
     }
   } catch(error) {
     console.log(error);
+    return res.status(500).send({ message: 'Internal server error' });
+  }
+});
+
+app.get('/api/refresh', async function(req, res) {
+  const { email } = req.query;
+  try {
+    if(req.cookies.jwt) {
+      const refreshToken = req.cookies.jwt;
+
+      jwt.verify(refreshToken, 'timesheet123', (err, decoded) => {
+        if(err) {
+          res.status(401).send({ message: 'Unauthorized' });
+        } else {
+          const accessToken = jwt.sign({userId: email }, 'timesheet123', { expiresIn: '1h' });
+          res.status(200).send({ token: accessToken });
+        }
+      });
+    } else {
+      res.status(406).json({ message: 'Unauthorized' });
+    }
+  } catch(err) {
+    console.log(err);
   }
 });
 

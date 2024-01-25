@@ -8,8 +8,10 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Button from "@mui/material/Button";
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useRefreshToken from '../../hooks/useRefreshToken';
 
 const columns = [
   {id: 'fullName', label: 'Full Name', minWidth: 170},
@@ -32,6 +34,7 @@ function Users() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const navigate = useNavigate();
+  const refresh = useRefreshToken();
 
   useEffect(() => {
 
@@ -91,7 +94,8 @@ function Users() {
                         <TableCell key={column.id} align={column.align}>
                           {column.format && typeof value === 'number'
                             ? column.format(value)
-                            : column.id === 'action' ? <EditIcon sx={{ cursor: 'pointer' }} onClick={()=> handleUserEdit(row['email'])} /> : value}
+                            : column.id === 'action' ? <div style={{ display: 'flex', flexDirection: 'row' }}><EditIcon sx={{ cursor: 'pointer', marginRight: '5px' }} onClick={()=> handleUserEdit(row['email'])} /> <DeleteForeverIcon sx={{ cursor: 'pointer' }} onClick={()=> handleUserEdit(row['email'])} /></div> : value}
+
                         </TableCell>
                       );
                     })}
@@ -110,6 +114,7 @@ function Users() {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
       />
+      <Button onClick={() => refresh()} >Refresh</Button>
     </Paper>
   )
 }
