@@ -22,8 +22,6 @@ app.use(cors({
   origin: 'http://localhost:3001',
 }));
 
-app.use("/api", apiRouter);
-
 app.post("/api/login", async function (req, res, next) {
   const { email, password } = req.body;
 
@@ -45,6 +43,11 @@ app.post("/api/login", async function (req, res, next) {
           secure: true,
           path: '/api/refresh',
         });
+        res.cookie('email', email, {
+          httpOnly: true,
+          secure: true,
+          path: '/api/refresh'
+        });
         userDetails['token'] = token;
         return res.status(200).send(userDetails);
       } else {
@@ -60,17 +63,18 @@ app.post("/api/login", async function (req, res, next) {
 });
 
 app.get('/api/refresh', async function(req, res) {
-  const { email } = req.query;
   try {
     if(req.cookies.jwt) {
       const refreshToken = req.cookies.jwt;
-
+      const userEmail = req.cookies.email;
+      const user = await run('timesheet', 'users', 'find', {email: userEmail});
+      const role = user.role;
       jwt.verify(refreshToken, 'timesheet123', (err, decoded) => {
         if(err) {
           res.status(401).send({ message: 'Unauthorized' });
         } else {
-          const accessToken = jwt.sign({userId: email }, 'timesheet123', { expiresIn: '1h' });
-          res.status(200).send({ token: accessToken });
+          const accessToken = jwt.sign({userId: userEmail }, 'timesheet123', { expiresIn: '1h' });
+          res.status(200).send({ role: role, token: accessToken });
         }
       });
     } else {
@@ -80,5 +84,7 @@ app.get('/api/refresh', async function(req, res) {
     console.log(err);
   }
 });
+
+app.use("/api", apiRouter);
 
 module.exports = app;

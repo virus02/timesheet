@@ -59,14 +59,13 @@ function Login() {
         }
       );
       const accessToken = response.data.token;
-      const roles = response.data.role;
-      console.log(response.data);
-      setAuth({ email, password, roles, accessToken });
+      const role = response.data.role;
+      setAuth({ email, password, role, accessToken });
       setEmail('');
       setPassword('');
       setSnackBarOpen(true);
       setSnackBarMsg("Login successfull !!!");
-      navigate(from, { replace: true });
+      navigate('/userlist');
     } catch(err) {
       if (!err.response) {
         setErrMsg('No server response');

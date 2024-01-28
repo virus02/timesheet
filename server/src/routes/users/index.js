@@ -14,6 +14,6 @@ app.get("/userlist", userList);
 
 app.get("/getuser", getUser);
 
-app.patch("/edituser", editUser)
+app.patch("/edituser", editUser);
 
 module.exports = app;

@@ -12,18 +12,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import CircularProgress from '@mui/material/CircularProgress';
+import InputLabel from '@mui/material/InputLabel';
 import Box from '@mui/material/Box';
-import axios from 'axios';
+import { axiosPrivate } from '../../api/axios';
 
-const names = [
-  'ABC',
-  'DEF',
-  'GHI',
-  'JKL',
-  'MNO'
+const roles = [
+  {id: 1, name:'Admin'},
+  {id: 0, name: 'User'}
 ];
-
-const roles = ['Admin', 'User'];
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -47,6 +43,7 @@ function EditUser() {
   const [snackBarOpen, setSnackBarOpen] = useState(false);
   const [snackBarMsg, setSnackBarMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [names, setNames] = useState([]);
 
   const [fullNameErr, setFullNameErr] = useState(false);
   const [emailErr, setEmailErr] = useState(false);
@@ -58,14 +55,15 @@ function EditUser() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/user/getuser?email=${email}`)
-        const result = await response.json();
+        const response = await axiosPrivate(`http://localhost:3000/api/user/getuser?email=${email}`)
+        const result = await response.data;
         let user = result.details;
         console.log(user);
         setFullName(user.fullName);
         setEditEmail(user.email);
         setDepartment(user.department);
         setProject(user.projects);
+        setRole(user.role)
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -74,6 +72,34 @@ function EditUser() {
     fetchUser();
 
   }, [email]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const getProjects = async () => {
+      try {
+        if(isMounted) {
+          setIsLoading(true);
+          console.log('API request started');
+
+          const response = await axiosPrivate.get('/project/projectlist');
+
+          const projects = response.data.map(ele => ele.name);
+          setNames(projects);
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        setIsLoading(false);
+      }
+    };
+
+    getProjects();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -97,8 +123,6 @@ function EditUser() {
       setProjectErr(true);
     }
 
-    let url = 'http://localhost:3000/api/user/'
-
     if(fullName && email && department && project.length > 0) {
       let data = {
         fullName: fullName,
@@ -107,7 +131,7 @@ function EditUser() {
         department: department,
         projects: project
       }
-      axios.patch(url + 'edituser', data)
+      axiosPrivate.patch('/user/edituser', data)
       .then((response)=> {
         setSnackBarOpen(true);
         setSnackBarMsg("User has been created");
@@ -156,7 +180,7 @@ function EditUser() {
     <div className="edit-user-container">
       { !isLoading ?
         <div className="edit-user-form-container">
-          <Card sx={{ padding: "10px", height: "65vh", alignItems: "center" }} raised>
+          <Card sx={{ padding: "10px", height: "70vh", alignItems: "center" }} raised>
           <h2 style={{ textAlign: "center" }}>UPDATE USER</h2>
           <form onSubmit={handleSubmit}>
               <TextField
@@ -183,6 +207,7 @@ function EditUser() {
                 value={editEmail}
                 error={emailErr}
               />
+              <InputLabel id="role-checkbox-label" style={{ float: 'left' }}>Role</InputLabel>
               <Select
                 value={role}
                 fullWidth
@@ -190,8 +215,8 @@ function EditUser() {
                 sx={{ mb: 3 }}
               >
                 {roles.map((r) => (
-                  <MenuItem key={r} value={r}>
-                    {r}
+                  <MenuItem key={r.id} value={r.id} selected={roles.indexOf(role) > -1}>
+                    {r.name}
                   </MenuItem>
                 ))}
               </Select>
@@ -207,6 +232,7 @@ function EditUser() {
                 value={department}
                 error={departmentErr}
               />
+              <InputLabel id="role-checkbox-label" style={{ float: 'left' }}>Projects</InputLabel>
               <Select
                 value={project}
                 displayEmpty

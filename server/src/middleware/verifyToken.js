@@ -6,7 +6,8 @@ export async function verifyToken(req, res) {
   }
 
   try {
-    const decodedToken = jwt.verify(token, 'timesheet123');
+    let authToken = token.split('Bearer ')[1];
+    const decodedToken = jwt.verify(authToken, 'timesheet123');
     req.userId = decodedToken.userId;
     next();
   } catch (error) {

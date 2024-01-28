@@ -48,7 +48,8 @@ export async function userList(req, res) {
     result.forEach(ele => {
       delete ele['_id'];
     });
-    res.status(200).send(result);
+    console.log(result);
+    res.status(200).json(result);
   } catch(err) {
     console.log(err);
   }

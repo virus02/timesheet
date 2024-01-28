@@ -1,5 +1,5 @@
 import "./CreateUser.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import Card from '@mui/material/Card';
 import TextField from "@mui/material/TextField";
@@ -11,10 +11,10 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
-import CircularProgress from '@mui/material/CircularProgress';
-import Box from '@mui/material/Box';
-// import InputLabel from '@mui/material/InputLabel';
-import axios from 'axios';
+import InputLabel from '@mui/material/InputLabel';
+import CircularProgress from "@mui/material/CircularProgress";
+import Box  from "@mui/material/Box";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -27,13 +27,10 @@ const MenuProps = {
   },
 };
 
-const names = [
-  'ABC',
-  'DEF',
-  'GHI',
-  'JKL',
-  'MNO'
-];
+const roles = [
+  'Admin',
+  'User'
+]
 
 function CreateUser() {
   const [fullName, setFullName] = useState("");
@@ -42,19 +39,50 @@ function CreateUser() {
   const [password, setPassword] = useState("");
   const [department, setDepartment] = useState("");
   const [project, setProject] = useState([]);
+  const [names, setNames] = useState([]);
   const [snackBarOpen, setSnackBarOpen] = useState(false);
   const [snackBarMsg, setSnackBarMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const axiosPrivate = useAxiosPrivate();
 
   const [fullNameErr, setFullNameErr] = useState(false);
-  const [roleErr, setRoleErr] = useState("");
+  const [roleErr, setRoleErr] = useState(false);
   const [emailErr, setEmailErr] = useState(false);
   const [passwordErr, setPasswordErr] = useState(false);
   const [departmentErr, setDepartmentErr] = useState(false);
   const [projectErr, setProjectErr] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const getProjects = async () => {
+      try {
+        if(isMounted) {
+          console.log('inside');
+          setIsLoading(true);
+          console.log('API request started');
+
+          const response = await axiosPrivate.get('/project/projectlist');
+
+          const projects = response.data.map(ele => ele.name);
+          setNames(projects);
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        setIsLoading(false);
+      }
+    };
+
+    getProjects();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [axiosPrivate]);
   
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     setFullNameErr(false);
@@ -84,8 +112,6 @@ function CreateUser() {
       setProjectErr(true);
     }
 
-    let url = 'http://localhost:3000/api/user/'
-
     if(fullName && password && email && department && project.length > 0) {
       let data = {
         fullName: fullName,
@@ -95,8 +121,9 @@ function CreateUser() {
         department: department,
         projects: project
       }
-      axios.post(url + 'createuser', data)
-      .then((response)=> {
+
+      try {
+        await axiosPrivate.post('/user/createuser', data);
         setSnackBarOpen(true);
         setSnackBarMsg("User has been created");
         setIsLoading(false);
@@ -107,11 +134,14 @@ function CreateUser() {
         setDepartment('');
         setProject([]);
         navigate('/userlist');
-      })
-      .catch((error) => {
+      } catch(err) {
+        console.error(err);
         setSnackBarOpen(true);
         setSnackBarMsg("Something went wrong!!!");
-      });
+        setIsLoading(false);
+      }
+    } else {
+      setIsLoading(false);
     }
   }
 
@@ -145,9 +175,9 @@ function CreateUser() {
 
   return(
     <div className="create-user-container">
-      { !isLoading ?
+      { !isLoading ? (
         <div className="create-user-form-container">
-          <Card sx={{ padding: "10px", height: "72vh", alignItems: "center" }} raised>
+          <Card sx={{ padding: "10px", height: "80vh", alignItems: "center" }} raised>
           <h2 style={{ textAlign: "center" }}>Create User</h2>
           <form onSubmit={handleSubmit}>
               <TextField
@@ -162,17 +192,20 @@ function CreateUser() {
                 value={fullName}
                 error={fullNameErr}
               />
-              {/* <InputLabel id="role-label">Role</InputLabel> */}
+              <InputLabel id="role-checkbox-label" style={{ float: 'left' }}>Role</InputLabel>
               <Select
-                labelId="role-label"
                 value={role}
                 fullWidth
                 onChange={handleRoleSelect}
                 sx={{ mb: 3 }}
+                label="role"
                 error={roleErr}
               >
-                <MenuItem value={1}>Admin</MenuItem>
-                <MenuItem value={0}>User</MenuItem>
+                {roles.map((r) => (
+                  <MenuItem key={r} value={r}>
+                    {r}
+                  </MenuItem>
+                ))}
               </Select>
               <TextField
                 label="Email"
@@ -210,6 +243,7 @@ function CreateUser() {
                 value={department}
                 error={departmentErr}
               />
+              <InputLabel id="project-checkbox-label" style={{ float: 'left' }}>Projects</InputLabel>
               <Select
                 value={project}
                 displayEmpty
@@ -222,7 +256,7 @@ function CreateUser() {
               >
                 {names.map((name) => (
                   <MenuItem key={name} value={name}>
-                    <Checkbox checked={project.indexOf(name) > -1} />
+                    <Checkbox checked={ project.indexOf(name) > -1 } />
                     <ListItemText primary={name} />
                   </MenuItem>
                 ))}
@@ -233,10 +267,12 @@ function CreateUser() {
               </div>
             </form>
           </Card>
-        </div> :
-        <Box sx={{ display: 'flex' }}>
-          <CircularProgress />
-        </Box>
+        </div> )
+        :(
+          <Box sx={{ display: 'flex' }}>
+            <CircularProgress />
+          </Box>
+        )
       }
       <Snackbar
         open={snackBarOpen}

@@ -7,12 +7,17 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import Tooltip from '@mui/material/Tooltip';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
+import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined';
+import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
+import { useNavigate } from 'react-router-dom';
 
 const settings = ['Logout'];
 
 function Header() {
   const [anchorElUser, setAnchorElUser] = useState(null);
+  const navigate = useNavigate();
 
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
@@ -46,31 +51,43 @@ function Header() {
             >
               LOGO
             </Typography>
+            <Tooltip title="Projects">
+              <IconButton onClick={() => navigate('/projectlist')} sx={{ p: 0, cursor: 'pointer', marginRight: '30px' }}>
+                <ListAltOutlinedIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Users">
+              <IconButton onClick={() => navigate('/userlist')} sx={{ p: 0, cursor: 'pointer', marginRight: '30px' }}>
+                <PeopleOutlinedIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Account">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, cursor: 'pointer' }}>
                 <AccountCircleOutlinedIcon />
               </IconButton>
-              <Menu
-                sx={{ mt: '45px' }}
-                id="menu-appbar"
-                anchorEl={anchorElUser}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorElUser)}
-                onClose={handleCloseUserMenu}
-              >
-                {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                    <Typography textAlign="center">{setting}</Typography>
-                  </MenuItem>
-                ))}
-              </Menu>
+            </Tooltip>
+            <Menu
+              sx={{ mt: '45px' }}
+              id="menu-appbar"
+              anchorEl={anchorElUser}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}
+            >
+              {settings.map((setting) => (
+                <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                  <Typography textAlign="center">{setting}</Typography>
+                </MenuItem>
+              ))}
+            </Menu>
           </Toolbar>
       </AppBar>
     </Box>
