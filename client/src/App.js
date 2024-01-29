@@ -13,6 +13,10 @@ import CreateUser from './components/users/CreateUser';
 import EditUser from './components/users/EditUser';
 import Projects from './components/projects/Projects';
 import CreateProject from './components/projects/CreateProject';
+import EditProject from './components/projects/EditProject';
+import Activities from './components/activities/Activities';
+import CreateActivity from './components/activities/CreateActivity';
+import EditActivity from './components/activities/EditActivity';
 
 function App() {
   return (
@@ -34,6 +38,11 @@ function App() {
             
             <Route path='/projectlist' element={<Projects />} />
             <Route path="/createproject" element={<CreateProject />} />
+            <Route path='/editproject/:projectname' element={<EditProject />} />
+
+            <Route path='/activitylist' element={<Activities />} />
+            <Route path="/createactivity" element={<CreateActivity />} />
+            <Route path='/editactivity/:activityname' element={<EditActivity />} />
           </Route>
         </Route>
       </Route>

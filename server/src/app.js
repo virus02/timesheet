@@ -62,6 +62,17 @@ app.post("/api/login", async function (req, res, next) {
   }
 });
 
+app.post('/api/logout', async function(req, res) {
+  try {
+    res.clearCookie('jwt');
+    res.clearCookie('email');
+    res.status(200).send({ message: 'Success' });
+  } catch(err) {
+    console.log(error);
+    return res.status(500).send({ message: 'Internal server error' });
+  }
+});
+
 app.get('/api/refresh', async function(req, res) {
   try {
     if(req.cookies.jwt) {

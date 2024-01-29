@@ -11,12 +11,15 @@ import Tooltip from '@mui/material/Tooltip';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
+import InventoryOutlinedIcon from '@mui/icons-material/InventoryOutlined';
 import { useNavigate } from 'react-router-dom';
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 
 const settings = ['Logout'];
 
 function Header() {
   const [anchorElUser, setAnchorElUser] = useState(null);
+  const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
 
   const handleOpenUserMenu = (event) => {
@@ -27,6 +30,10 @@ function Header() {
     setAnchorElUser(null);
   };
 
+  const handleLogout = async () => {
+    await axiosPrivate.post('/logout');
+    navigate('/login');
+  }
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -48,9 +55,15 @@ function Header() {
                 flexGrow: 1,
                 cursor: 'pointer'
               }}
+              onClick={() => navigate('/')}
             >
               LOGO
             </Typography>
+            <Tooltip title="Activities">
+              <IconButton onClick={() => navigate('/activitylist')} sx={{ p: 0, cursor: 'pointer', marginRight: '30px' }}>
+                <InventoryOutlinedIcon />
+              </IconButton>
+            </Tooltip>
             <Tooltip title="Projects">
               <IconButton onClick={() => navigate('/projectlist')} sx={{ p: 0, cursor: 'pointer', marginRight: '30px' }}>
                 <ListAltOutlinedIcon />
@@ -84,7 +97,7 @@ function Header() {
             >
               {settings.map((setting) => (
                 <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography textAlign="center">{setting}</Typography>
+                  <Typography textAlign="center" onClick={setting === 'Logout' ? handleLogout : ''}>{setting}</Typography>
                 </MenuItem>
               ))}
             </Menu>

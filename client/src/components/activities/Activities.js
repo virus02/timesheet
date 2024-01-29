@@ -17,17 +17,14 @@ import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 
 const columns = [
   {id: 'name', label: 'Name', minWidth: 170},
-  {id: 'description', label: 'Description', minWidth: 200},
-  {id: 'activity', label: 'Activitites', minWidth: 250},
   {id: 'action', label: 'Action', minWidth: 50}
 ]
 
-function createData(name, description, activities) {
-  let activity = activities.toString()
-  return { name, description, activity };
+function createData(name, description) {
+  return { name, description };
 }
 
-function Projects() {
+function Activities() {
 
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(0);
@@ -40,10 +37,10 @@ function Projects() {
   useEffect(() => {
     let isMounted = true;
 
-    const getProjects = async () => {
+    const getActivities = async () => {
       try {
         setIsLoading(true);
-        const response = await axiosPrivate.get('/project/projectlist');
+        const response = await axiosPrivate.get('/activity/activitylist');
         const convertedRows = response.data.map(ele => createData(ele.name, ele.description, ele.activity));
         isMounted && setRows(convertedRows);
         setIsLoading(false);
@@ -52,7 +49,7 @@ function Projects() {
         setIsLoading(false);
       }
     }
-    getProjects();
+    getActivities();
     return () => {
       isMounted = false;
     }
@@ -67,15 +64,15 @@ function Projects() {
     setPage(0);
   };
 
-  const handleProjectEdit = (projectName) => {
-    navigate(`/editproject/${projectName}`);
+  const handleActivityEdit = (activityname) => {
+    navigate(`/editactivity/${activityname}`);
   }
 
   return(
     <div>
       { !isLoading ? (
-        <Paper sx={{ width: '75%', overflow: 'hidden', marginTop: '10px', marginLeft: '12%' }}>
-          <Button sx={{ margin: '5px', float: 'right' }} onClick={() => navigate('/createproject')} variant="contained" color="primary">Create Project</Button>
+        <Paper sx={{ width: '30%', overflow: 'hidden', marginTop: '50px', marginLeft: '35%' }}>
+          <Button sx={{ margin: '5px', float: 'right' }} onClick={() => navigate('/createactivity')} variant="contained" color="primary">CREATE ACTIVITY</Button>
           <TableContainer sx={{ maxHeight: 440 }}>
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
@@ -103,7 +100,7 @@ function Projects() {
                             <TableCell key={column.id} align={column.align}>
                               {column.format && typeof value === 'number'
                                 ? column.format(value)
-                                : column.id === 'action' ? <div style={{ display: 'flex', flexDirection: 'row' }}><EditIcon sx={{ cursor: 'pointer', marginRight: '5px' }} onClick={()=> handleProjectEdit(row['name'])} /> <DeleteForeverIcon sx={{ cursor: 'pointer' }} onClick={()=> handleProjectEdit(row['name'])} /></div> : value}
+                                : column.id === 'action' ? <div style={{ display: 'flex', flexDirection: 'row' }}><EditIcon sx={{ cursor: 'pointer', marginRight: '5px' }} onClick={()=> handleActivityEdit(row['name'])} /> <DeleteForeverIcon sx={{ cursor: 'pointer' }} onClick={()=> handleActivityEdit(row['name'])} /></div> : value}
 
                             </TableCell>
                           );
@@ -134,4 +131,4 @@ function Projects() {
   )
 }
 
-export default Projects;
+export default Activities;

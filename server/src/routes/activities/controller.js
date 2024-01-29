@@ -29,10 +29,10 @@ export async function getActivity(req, res) {
   try {
     const { name } = req.query;
 
-    const project = await run('timesheet', 'activities', 'find', {name: name});
-    delete project['_id'];
+    const activity = await run('timesheet', 'activities', 'find', {name: name});
+    delete activity['_id'];
     
-    res.status(200).json({status: 'success', details: project});
+    res.status(200).json({status: 'success', details: activity});
   } catch(err) {
     console.log(err);
   }

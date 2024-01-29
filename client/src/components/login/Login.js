@@ -1,6 +1,6 @@
 import "./Login.css";
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from "../../api/axios";
 import Card from '@mui/material/Card';
 import TextField from "@mui/material/TextField";
@@ -22,9 +22,6 @@ function Login() {
 
   const [snackBarOpen, setSnackBarOpen] = useState(false);
   const [snackBarMsg, setSnackBarMsg] = useState('');
-
-  const location = useLocation();
-  const from = location.state?.from?.pathname || '/';
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -86,7 +83,7 @@ function Login() {
     <div className="login-container">
       <div className="login-form-container">
         <Card sx={{ padding: "10px", height: "35vh", alignItems: "center" }} raised>
-          <h2 style={{ textAlign: "center" }}>Login Form</h2>
+          <h2 style={{ textAlign: "center" }}>LOGIN</h2>
           <p ref={errRef} className={errMsg ? 'errmsg' : 'offscreen'} aria-live="assertive">{errMsg}</p>
           <form onSubmit={handleSubmit}>
             <TextField
